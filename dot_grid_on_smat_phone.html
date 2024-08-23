@@ -294,7 +294,7 @@
             const dia = document.getElementById('diameterInput').value;
             const pixelDensity = window.devicePixelRatio;
             const DotperPx = 1 / pixelDensity;
-            const diamm = (dia) * DotperPx / 3.779;
+            const diamm = (dia) / DotperPx / 3.779;
             return diamm.toFixed(2) + " mm";
         }
         function calculateGap() {
@@ -302,8 +302,8 @@
             const eddgeGap = parseFloat(document.getElementById('gapInput').value);
             const pixelDensity = window.devicePixelRatio;
             const DotperPx = 1 / pixelDensity;
-            const centerGap = (eddgeGap + dia) * DotperPx / 3.779;
-            return centerGap + " mm";
+            const centerGap = (eddgeGap + dia) / DotperPx / 3.779;
+            return centerGap.toFixed(2) + " mm";
         }
 
         function displayPixelPitch() {
