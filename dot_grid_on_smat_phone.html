@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>円の表示プログラム</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #toggleButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #toggleButton:hover {
+            background-color: #0056b3;
+        }
+
+        #inputContainer {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .inputGroup {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        #displayButton {
+            width: 60px;
+            padding: 10px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px auto;
+            transition: all 0.3s ease;
+        }
+
+        #displayButton:hover {
+            background-color: #0056b3;
+        }
+
+        #circleContainerWrapper {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: fit-content;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            background-color: #fff;
+            padding: 50px;
+        }
+
+        #circleContainer {
+            display: grid;
+            justify-content: center;
+        }
+
+        .circle {
+            background-color: black;
+            border-radius: 50%;
+        }
+
+        .cornerNumber {
+            position: absolute;
+            font-size: 20px;
+            color: red;
+            cursor: pointer;
+        }
+
+        .cornerNumber.top-left {
+            top: -25px;
+            left: -25px;
+        }
+
+        .cornerNumber.top-right {
+            top: -25px;
+            right: -25px;
+        }
+
+        .cornerNumber.bottom-left {
+            bottom: -25px;
+            left: -25px;
+        }
+
+        .cornerNumber.bottom-right {
+            bottom: -25px;
+            right: -25px;
+        }
+
+        #pixelPitch {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            right: 10px;
+            text-align: right;
+            font-size: 14px;
+            color: #333;
+        }
+        #zoom-or {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            width: 100%;
+            text-align: left;
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 非表示状態でのスタイル調整 */
+        #inputContainer.hidden {
+            visibility: hidden;
+            display: none;
+        }
+
+        #displayButton.hidden {
+            visibility: hidden;
+            display: none;
+        }
+
+        .info-box {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f8f8f8;
+            padding: 10px;
+            box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <button id="toggleButton" onclick="toggleInputVisibility()">SETTING</button>
+
+    <div id="inputContainer">
+        <button id="displayButton" onclick="displayCircles()">RUN</button>
+        <div class="inputGroup">
+            <label for="rowsInput">ROW</label>
+            <input type="number" id="rowsInput" min="1" max="50" value="13">
+        </div>
+        <div class="inputGroup">
+            <label for="columnsInput">COL</label>
+            <input type="number" id="columnsInput" min="1" max="50" value="7">
+        </div>
+        <div class="inputGroup">
+            <label for="diameterInput">DIA (px)</label>
+            <input type="number" id="diameterInput" min="1" max="100" value="5">
+        </div>
+        <div class="inputGroup">
+            <label for="gapInput">SPAN (px)</label>
+            <input type="number" id="gapInput" min="0" max="100" value="20">
+        </div>
+        <div class="inputGroup">
+            <label for="cornerNumberInput">NUM</label>
+            <input type="number" id="cornerNumberInput" min="100" max="999" value="101">
+        </div>
+    </div>
+
+    
+
+    <div id="circleContainerWrapper">
+        <div id="circleContainer"></div>
+        <div class="cornerNumber top-left" id="topLeftNumber">1</div>
+        <div class="cornerNumber top-right" id="topRightNumber">1</div>
+        <div class="cornerNumber bottom-left" id="bottomLeftNumber">1</div>
+        <div class="cornerNumber bottom-right" id="bottomRightNumber">1</div>
+    </div>
+
+    <div id="pixelPitch"></div>
+    <div id="zoom-or">
+        <span id="zoom-ratio">1</span>
+    </div>
+
+    <script>
+        function toggleInputVisibility() {
+            const inputContainer = document.getElementById('inputContainer');
+            const displayButton = document.getElementById('displayButton');
+            const circleContainerWrapper = document.getElementById('circleContainerWrapper');
+            const isHidden = inputContainer.classList.contains('hidden');
+            
+            if (isHidden) {
+                inputContainer.classList.remove('hidden');
+                displayButton.classList.remove('hidden');
+            } else {
+                inputContainer.classList.add('hidden');
+                displayButton.classList.add('hidden');
+            }
+            
+            // 円の位置を中央に保つ
+            if (isHidden) {
+                circleContainerWrapper.style.top = '50%';
+                circleContainerWrapper.style.transform = 'translate(-50%, -50%)';
+            } else {
+                circleContainerWrapper.style.top = '';
+                circleContainerWrapper.style.transform = '';
+            }
+        }
+
+        function displayCircles() {
+            const rows = document.getElementById('rowsInput').value;
+            const columns = document.getElementById('columnsInput').value;
+            const diameter = document.getElementById('diameterInput').value;
+            const gap = document.getElementById('gapInput').value;
+            const cornerNumber = document.getElementById('cornerNumberInput').value;
+            const circleContainer = document.getElementById('circleContainer');
+
+            // 既存の円をクリア
+            circleContainer.innerHTML = '';
+
+            // grid-template-columnsとgapを更新
+            circleContainer.style.gridTemplateColumns = `repeat(${columns}, auto)`;
+            circleContainer.style.gap = `${gap}px`;
+            
+            // 入力された行と列の数だけ円を生成
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    const circle = document.createElement('div');
+                    circle.className = 'circle';
+                    circle.style.width = `${diameter}px`;
+                    circle.style.height = `${diameter}px`;
+                    circleContainer.appendChild(circle);
+                }
+            }
+
+            // 四隅の数字を更新
+            const cornerNumberElements = [
+                document.getElementById('topLeftNumber'),
+                document.getElementById('topRightNumber'),
+                document.getElementById('bottomLeftNumber'),
+                document.getElementById('bottomRightNumber')
+            ];
+
+            cornerNumberElements.forEach(element => {
+                element.textContent = cornerNumber;
+            });
+
+            const pixelPitchCont = document.getElementById('pixelPitch');
+            pixelPitchCont.innerHTML = '';
+            displayPixelPitch();
+        }
+
+        function calculatePixelPitch() {
+            const dia = document.getElementById('diameterInput').value;
+            const pixelDensity = window.devicePixelRatio;
+            const DotperPx = 1 / pixelDensity;
+            const diamm = (dia) * DotperPx / 3.779;
+            return diamm.toFixed(2) + " mm";
+        }
+        function calculateGap() {
+            const dia = parseFloat(document.getElementById('diameterInput').value);
+            const eddgeGap = parseFloat(document.getElementById('gapInput').value);
+            const pixelDensity = window.devicePixelRatio;
+            const DotperPx = 1 / pixelDensity;
+            const centerGap = (eddgeGap + dia) * DotperPx / 3.779;
+            return centerGap + " mm";
+        }
+
+        function displayPixelPitch() {
+            const pixelPitchElement = document.getElementById('pixelPitch');
+            pixelPitchElement.textContent = `Dia: ${calculatePixelPitch()} , Span = ${calculateGap()} `;
+        }
+
+        function updateCornerNumber(delta) {
+            const cornerNumberInput = document.getElementById('cornerNumberInput');
+            cornerNumberInput.value = parseInt(cornerNumberInput.value) + delta;
+
+            const cornerNumber = cornerNumberInput.value;
+            document.getElementById('topLeftNumber').textContent = cornerNumber;
+            document.getElementById('topRightNumber').textContent = cornerNumber;
+            document.getElementById('bottomLeftNumber').textContent = cornerNumber;
+            document.getElementById('bottomRightNumber').textContent = cornerNumber;
+        }
+
+        function handleClick(event) {
+            const circleContainer = document.getElementById('circleContainerWrapper');
+            const rect = circleContainer.getBoundingClientRect();
+            const clickX = event.clientX;
+            const clickY = event.clientY;
+
+            // 円の表示領域内でクリックされたかどうかを判定
+            if (clickX >= rect.left && clickX <= rect.right && clickY >= rect.top && clickY <= rect.bottom) {
+                const screenHeight = window.innerHeight;
+                const yOffset = event.clientY;
+
+                if (yOffset < screenHeight / 2) {
+                    updateCornerNumber(1);
+                } else {
+                    updateCornerNumber(-1);
+                }
+            }
+        }
+
+        window.onload = function() {
+            displayPixelPitch();
+            document.body.addEventListener('click', handleClick);
+        }
+        function updateZoomLevel() {
+            const zoomRatio = window.devicePixelRatio;
+            document.getElementById('zoom-ratio').textContent = zoomRatio.toFixed(2);
+        }
+
+        // ページ読み込み時に拡大率を表示
+        updateZoomLevel();
+
+        // 拡大縮小時にも拡大率を更新
+        window.addEventListener('resize', updateZoomLevel);
+    </script>
+</body>
+</html>
