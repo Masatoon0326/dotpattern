@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>円の表示プログラム</title>
     <style>
+        html, css{
+            touch-action:none;
+        }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -223,14 +226,6 @@
     </div>
 
     <script>
-        const touchHandler = (event: any) => {
-            if (event.touches.length > 1) {
-                event.preventDefault();
-            }
-        };
-        document.addEventListener('touchstart', touchHandler, {
-            passive: false
-        });
         function toggleInputVisibility() {
             const inputContainer = document.getElementById('inputContainer');
             const displayButton = document.getElementById('displayButton');
