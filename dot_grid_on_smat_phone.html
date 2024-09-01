@@ -336,11 +336,17 @@
             const clickY = event.clientY;
 
             // 円の表示領域内でクリックされたかどうかを判定
-            if (clickX >= rect.left && clickX <= rect.right && clickY >= rect.top && clickY <= rect.bottom) {
+            const ignoreElements = [
+                document.getElementById('toggleButton')
+            ];
+
+
+            if (clickX >= rect.left - 500 && clickX <= rect.right + 500 && clickY >= rect.top - 500 && clickY <= rect.bottom + 500 
+            && window.getComputedStyle(inputContainer).visibility === 'hidden' && event.target != ignoreElements) {
                 const screenHeight = window.innerHeight;
                 const yOffset = event.clientY;
 
-                if (yOffset < screenHeight / 2) {
+                if (clickY < screenHeight / 2) {
                     updateCornerNumber(1);
                 } else {
                     updateCornerNumber(-1);
